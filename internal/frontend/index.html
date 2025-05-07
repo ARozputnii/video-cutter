@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Video Cutter</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
@@ -21,31 +21,42 @@
         </form>
     </div>
 
-    <div id="video-preview" class="card" style="display:none">
+    <div id="video-preview" class="card mt-3" style="display:none">
         <video id="player" controls style="width: 100%; max-width: 100%;"></video>
     </div>
 
-    <div class="card" id="cutFormWrapper" style="display:none">
+    <div class="card mt-3" id="cutFormWrapper" style="display:none">
         <form id="cutForm">
-            <div class="mb-3">
-                <label for="start" class="form-label">Start Time (hh:mm:ss)</label>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="start" name="start" pattern="\d{2}:\d{2}:\d{2}" required>
-                    <button type="button" class="btn btn-outline-secondary" id="setStart">From current</button>
-                </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button type="button" class="btn btn-outline-primary" id="showRangeInputs">+ Add Range</button>
             </div>
-            <div class="mb-3">
-                <label for="end" class="form-label">End Time (hh:mm:ss)</label>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="end" name="end" pattern="\d{2}:\d{2}:\d{2}" required>
-                    <button type="button" class="btn btn-outline-secondary" id="setEnd">From current</button>
+
+            <div id="rangeInputs" class="mb-3" style="display: none;">
+                <div class="mb-2">
+                    <label class="form-label">Start Time (hh:mm:ss)</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="start" pattern="\d{2}:\d{2}:\d{2}">
+                        <button type="button" class="btn btn-outline-secondary" id="setStart">From current</button>
+                    </div>
                 </div>
+                <div class="mb-2">
+                    <label class="form-label">End Time (hh:mm:ss)</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="end" pattern="\d{2}:\d{2}:\d{2}">
+                        <button type="button" class="btn btn-outline-secondary" id="setEnd">From current</button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-success" id="saveRange">Save Range</button>
             </div>
+
+            <ul class="list-group mb-3" id="rangeList"></ul>
+
             <div class="form-check mb-3">
                 <input class="form-check-input" type="checkbox" id="deleteOriginal">
                 <label class="form-check-label" for="deleteOriginal">Delete original video</label>
             </div>
-            <button type="submit" class="btn btn-success">Cut Video</button>
+
+            <button type="submit" class="btn btn-success">Cut & Merge Video</button>
         </form>
     </div>
 

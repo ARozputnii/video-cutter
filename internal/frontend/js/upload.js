@@ -5,10 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoInput = document.getElementById('video');
     const videoPreview = document.getElementById('video-preview');
     const videoElement = document.getElementById('player');
-    const cutForm = document.getElementById('cutFormWrapper');
+    const cutFormWrapper = document.getElementById('cutFormWrapper');
     const messageBox = document.getElementById('message');
 
-    if (!uploadForm || !videoInput || !videoPreview || !videoElement || !cutForm || !messageBox) return;
+    if (!uploadForm || !videoInput || !videoPreview || !videoElement || !cutFormWrapper || !messageBox) return;
 
     uploadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentFilename = filename;
             videoElement.src = `/uploads/${filename}`;
             videoPreview.style.display = 'block';
-            cutForm.style.display = 'block';
+            cutFormWrapper.style.display = 'block';
             messageBox.innerText = "";
         } catch (err) {
             messageBox.innerText = "Upload failed.";

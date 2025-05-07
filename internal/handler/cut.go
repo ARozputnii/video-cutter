@@ -1,47 +1,101 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
+	"time"
 )
 
 type CutRequest struct {
-	Filename   string `json:"filename"`
-	Start      string `json:"start"`
-	End        string `json:"end"`
-	DeleteOrig bool   `json:"delete_original"`
+	Filename       string `json:"filename"`
+	DeleteOriginal bool   `json:"delete_original"`
+	Ranges         []struct {
+		Start string `json:"start"`
+		End   string `json:"end"`
+	} `json:"ranges"`
 }
 
 func CutHandler(w http.ResponseWriter, r *http.Request) {
 	var req CutRequest
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&req); err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 
-	inputPath := filepath.Join("uploads", req.Filename)
-	outputFile := strings.TrimSuffix(req.Filename, filepath.Ext(req.Filename)) + "_cut.mp4"
-	outputPath := filepath.Join("uploads", outputFile)
+	inputPath := filepath.Join("uploads", filepath.Base(req.Filename))
+	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
+		http.Error(w, "Input file not found", http.StatusNotFound)
+		return
+	}
 
-	cmd := exec.Command("ffmpeg", "-i", inputPath, "-ss", req.Start, "-to", req.End, "-c", "copy", "-avoid_negative_ts", "1", outputPath)
-	err := cmd.Run()
+	tempDir, err := os.MkdirTemp("", "clips-*")
 	if err != nil {
-		http.Error(w, fmt.Sprintf("FFmpeg error: %v", err), http.StatusInternalServerError)
+		http.Error(w, "Cannot create temp dir", http.StatusInternalServerError)
 		return
 	}
+	defer os.RemoveAll(tempDir)
 
-	if req.DeleteOrig {
-		if err := os.Remove(inputPath); err != nil {
-			http.Error(w, fmt.Sprintf("Clip saved as %s, but failed to delete original: %v", outputFile, err), http.StatusInternalServerError)
+	var concatList bytes.Buffer
+	var tempFiles []string
+
+	for i, r := range req.Ranges {
+		outFile := filepath.Join(tempDir, fmt.Sprintf("clip_%d.ts", i))
+		cmd := exec.Command("ffmpeg",
+			"-i", inputPath,
+			"-ss", r.Start,
+			"-to", r.End,
+			"-c", "copy",
+			"-bsf:v", "h264_mp4toannexb",
+			"-f", "mpegts",
+			outFile,
+		)
+		var stderr bytes.Buffer
+		cmd.Stderr = &stderr
+
+		if err := cmd.Run(); err != nil {
+			http.Error(w, fmt.Sprintf("FFmpeg cut error: %v\nDetails: %s", err, stderr.String()), http.StatusInternalServerError)
 			return
 		}
+
+		tempFiles = append(tempFiles, outFile)
+		concatList.WriteString("file '" + outFile + "'\n")
 	}
 
-	fmt.Fprintf(w, outputFile)
+	listPath := filepath.Join(tempDir, "inputs.txt")
+	if err := ioutil.WriteFile(listPath, concatList.Bytes(), 0644); err != nil {
+		http.Error(w, "Cannot write concat list", http.StatusInternalServerError)
+		return
+	}
+
+	outputName := fmt.Sprintf("merged_%d.mp4", time.Now().Unix())
+	outputPath := filepath.Join("uploads", outputName)
+
+	mergeCmd := exec.Command("ffmpeg",
+		"-f", "concat",
+		"-safe", "0",
+		"-i", listPath,
+		"-c", "copy",
+		outputPath,
+	)
+
+	var mergeErr bytes.Buffer
+	mergeCmd.Stderr = &mergeErr
+
+	if err := mergeCmd.Run(); err != nil {
+		http.Error(w, fmt.Sprintf("FFmpeg merge error: %v\nDetails: %s", err, mergeErr.String()), http.StatusInternalServerError)
+		return
+	}
+
+	if req.DeleteOriginal {
+		_ = os.Remove(inputPath)
+	}
+
+	w.Write([]byte(fmt.Sprintf("Merged video saved as: %s", outputName)))
 }
