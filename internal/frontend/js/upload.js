@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoInput = document.getElementById('video');
     const videoPreview = document.getElementById('video-preview');
     const videoElement = document.getElementById('player');
-    const cutForm = document.getElementById('cutForm');
+    const cutForm = document.getElementById('cutFormWrapper');
     const messageBox = document.getElementById('message');
 
     if (!uploadForm || !videoInput || !videoPreview || !videoElement || !cutForm || !messageBox) return;
