@@ -22,12 +22,12 @@ No need to install Go or FFmpeg manually — everything runs out of the box.
 
 First run
 ```bash
-double-click windows-launcher.bat
+  double-click windows-launcher.bat
 ```
 Then open your browser and navigate to:
 
 ```bash
-http://localhost:3000
+  http://localhost:3000
 ```
 For next runs, just double-clic [video-cutter.exe](video-cutter.exe)
 ---
