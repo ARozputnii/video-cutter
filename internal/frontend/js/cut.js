@@ -81,7 +81,10 @@ document.addEventListener('DOMContentLoaded', () => {
             })
         });
 
-        const text = await res.text();
-        messageBox.textContent = text;
+        const data = await res.json();
+        messageBox.innerHTML = `
+      ✅ ${data.message}: <strong>${data.filename}</strong><br>
+      <a class="btn btn-outline-success mt-2" href="/uploads/${data.filename}" download>Download</a>
+    `;
     });
 });

@@ -43,8 +43,6 @@ func CutHandler(w http.ResponseWriter, r *http.Request) {
 	defer os.RemoveAll(tempDir)
 
 	var concatList bytes.Buffer
-	var tempFiles []string
-
 	for i, r := range req.Ranges {
 		outFile := filepath.Join(tempDir, fmt.Sprintf("clip_%d.ts", i))
 		cmd := exec.Command("ffmpeg",
@@ -64,7 +62,6 @@ func CutHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		tempFiles = append(tempFiles, outFile)
 		concatList.WriteString("file '" + outFile + "'\n")
 	}
 
@@ -97,5 +94,9 @@ func CutHandler(w http.ResponseWriter, r *http.Request) {
 		_ = os.Remove(inputPath)
 	}
 
-	w.Write([]byte(fmt.Sprintf("Merged video saved as: %s", outputName)))
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"message":  "Video saved",
+		"filename": outputName,
+	})
 }
