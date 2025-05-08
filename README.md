@@ -29,13 +29,13 @@ Then open your browser and navigate to:
 ```bash
   http://localhost:3000
 ```
-For next runs, just double-clic [video-cutter.exe](video-cutter.exe)
+For next runs, just double-click [video-cutter.exe](video-cutter.exe)
 ---
 
 ### 🧑‍💻 Developer Setup
 
 Prerequisites
- - Go 1.18+ installed 
+ - Go 1.24+ installed 
  - FFmpeg available in system PATH
 
 ```bash

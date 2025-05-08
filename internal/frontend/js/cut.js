@@ -70,8 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Submit the cut request to the backend
     cutForm.addEventListener('submit', async (e) => {
-        messageBox.style.display = 'block';
-
         e.preventDefault();
 
         if (ranges.length === 0) {
@@ -79,22 +77,34 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const res = await fetch('/cut', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                filename: currentFilename,
-                ranges
-            })
-        });
+        loader.style.display = 'block';
+        messageBox.style.display = 'none';
 
-        const data = await res.json();
+        try {
+            const res = await fetch('/cut', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    filename: currentFilename,
+                    ranges
+                })
+            });
 
-        messageBox.innerHTML = `
+            const data = await res.json();
+
+            messageBox.innerHTML = `
             <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
                 <p class="">✅ Video saved: <strong>${data.filename}</strong></p>
                 <a class="btn btn-outline-success" href="/uploads/${data.filename}" download>Download</a>
             </div>
         `;
+            messageBox.style.display = 'block';
+
+        } catch (err) {
+            messageBox.innerText = "❌ Error during cut.";
+            messageBox.style.display = 'block';
+        } finally {
+            loader.style.display = 'none';
+        }
     });
 });
