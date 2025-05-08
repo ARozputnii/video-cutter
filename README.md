@@ -31,7 +31,7 @@ Prerequisites
 
 ```bash
     go mod tidy
-    go run cmd/server/main.go
+    go run cmd/main.go
 ```
 
 
