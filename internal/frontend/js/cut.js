@@ -9,11 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const rangeInputs = document.getElementById('rangeInputs');
     const rangeList = document.getElementById('rangeList');
     const cutForm = document.getElementById('cutForm');
-    const deleteCheckbox = document.getElementById('deleteOriginal');
     const messageBox = document.getElementById('message');
 
     let ranges = [];
 
+    // Format time as hh:mm:ss
     function formatTime(seconds) {
         const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
         const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
@@ -21,20 +21,24 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${h}:${m}:${s}`;
     }
 
+    // Fill start input from video player time
     setStartBtn.addEventListener('click', () => {
         startInput.value = formatTime(player.currentTime);
     });
 
+    // Fill end input from video player time
     setEndBtn.addEventListener('click', () => {
         endInput.value = formatTime(player.currentTime);
     });
 
+    // Show input block when adding a range
     showRangeInputsBtn.addEventListener('click', () => {
         rangeInputs.style.display = 'block';
         startInput.value = '';
         endInput.value = '';
     });
 
+    // Save the current range and add it to the list
     saveRangeBtn.addEventListener('click', () => {
         const start = startInput.value;
         const end = endInput.value;
@@ -49,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         li.className = 'list-group-item d-flex justify-content-between';
         li.textContent = `${start} → ${end}`;
 
+        // Remove range button
         const removeBtn = document.createElement('button');
         removeBtn.className = 'btn btn-sm btn-danger';
         removeBtn.textContent = '×';
@@ -63,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         rangeInputs.style.display = 'none';
     });
 
+    // Submit the cut request to the backend
     cutForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -76,12 +82,13 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 filename: currentFilename,
-                ranges,
-                delete_original: deleteCheckbox.checked
+                ranges
             })
         });
 
         const data = await res.json();
+
+        // Show confirmation and download link
         messageBox.innerHTML = `
       ✅ ${data.message}: <strong>${data.filename}</strong><br>
       <a class="btn btn-outline-success mt-2" href="/uploads/${data.filename}" download>Download</a>

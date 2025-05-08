@@ -27,10 +27,12 @@
 
     <div class="card mt-3" id="cutFormWrapper" style="display:none">
         <form id="cutForm">
+            <!-- Add Range Button -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <button type="button" class="btn btn-outline-primary" id="showRangeInputs">+ Add Range</button>
             </div>
 
+            <!-- Range input block (initially hidden) -->
             <div id="rangeInputs" class="mb-3" style="display: none;">
                 <div class="mb-2">
                     <label class="form-label">Start Time (hh:mm:ss)</label>
@@ -49,12 +51,8 @@
                 <button type="button" class="btn btn-success" id="saveRange">Save Range</button>
             </div>
 
+            <!-- Saved range list -->
             <ul class="list-group mb-3" id="rangeList"></ul>
-
-            <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" id="deleteOriginal">
-                <label class="form-check-label" for="deleteOriginal">Delete original video</label>
-            </div>
 
             <button type="submit" class="btn btn-success">Cut & Merge Video</button>
         </form>
