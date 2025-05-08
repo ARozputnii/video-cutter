@@ -16,12 +16,21 @@ No need to install Go or FFmpeg manually — everything runs out of the box.
 ---
 
 ## 🚀 Quick Start
+---
 
 ### 🪟 Windows
 
+First run
 ```bash
 double-click windows-launcher.bat
 ```
+Then open your browser and navigate to:
+
+```bash
+http://localhost:3000
+```
+For next runs, just double-clic [video-cutter.exe](video-cutter.exe)
+---
 
 ### 🧑‍💻 Developer Setup
 
@@ -33,14 +42,13 @@ Prerequisites
     go mod tidy
     go run cmd/main.go
 ```
-
+---
 
 ## ⚠️ Notes
 
 - ✂️ Final output file overwrites the original
 - 🧹 Temporary files are cleaned up automatically
 - 🎞 Works best with `.mp4` input files
-
 ---
 
 ## 🧾 License
