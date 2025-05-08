@@ -1,0 +1,6 @@
+@echo off
+echo Starting FFmpeg...
+start "" ffmpeg.exe
+
+echo Starting App...
+start "" video-cutter.exe

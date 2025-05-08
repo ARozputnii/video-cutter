@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -53,8 +54,7 @@ func CutHandler(w http.ResponseWriter, r *http.Request) {
 	// For each range, create a temporary .ts clip
 	for i, r := range req.Ranges {
 		outFile := filepath.Join(tempDir, fmt.Sprintf("clip_%d.ts", i))
-
-		cmd := exec.Command("ffmpeg",
+		cmd := exec.Command(getFFmpegBinary(),
 			"-i", inputPath,
 			"-ss", r.Start,
 			"-to", r.End,
@@ -88,7 +88,7 @@ func CutHandler(w http.ResponseWriter, r *http.Request) {
 	outputName := originalName
 
 	// Merge all .ts clips into one .mp4
-	mergeCmd := exec.Command("ffmpeg",
+	mergeCmd := exec.Command(getFFmpegBinary(),
 		"-y",
 		"-f", "concat",
 		"-safe", "0",
@@ -120,4 +120,12 @@ func CutHandler(w http.ResponseWriter, r *http.Request) {
 		"message":  "Video saved",
 		"filename": outputName,
 	})
+}
+
+// getFFmpegBinary returns platform-specific binary name
+func getFFmpegBinary() string {
+	if runtime.GOOS == "windows" {
+		return "ffmpeg.exe"
+	}
+	return "ffmpeg"
 }
