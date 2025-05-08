@@ -20,7 +20,6 @@ type CutRequest struct {
 
 // CutResponse defines the output after cutting and merging the video.
 type CutResponse struct {
-	Message  string `json:"message"`
 	Filename string `json:"filename"`
 }
 
@@ -95,8 +94,5 @@ func (s *cutService) Cut(req CutRequest) (*CutResponse, error) {
 		return nil
 	})
 
-	return &CutResponse{
-		Message:  "Video saved",
-		Filename: req.Filename,
-	}, nil
+	return &CutResponse{Filename: req.Filename}, nil
 }

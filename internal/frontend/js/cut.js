@@ -70,6 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Submit the cut request to the backend
     cutForm.addEventListener('submit', async (e) => {
+        messageBox.style.display = 'block';
+
         e.preventDefault();
 
         if (ranges.length === 0) {
@@ -88,10 +90,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await res.json();
 
-        // Show confirmation and download link
         messageBox.innerHTML = `
-      ✅ ${data.message}: <strong>${data.filename}</strong><br>
-      <a class="btn btn-outline-success mt-2" href="/uploads/${data.filename}" download>Download</a>
-    `;
+            <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+                <p class="">✅ Video saved: <strong>${data.filename}</strong></p>
+                <a class="btn btn-outline-success" href="/uploads/${data.filename}" download>Download</a>
+            </div>
+        `;
     });
 });
