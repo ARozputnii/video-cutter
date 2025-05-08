@@ -31,29 +31,29 @@ func CutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Clean and validate input filename
+	// Validate input path
 	originalName := filepath.Base(req.Filename)
 	inputPath := filepath.Join("uploads", originalName)
 
-	// Check if file exists
 	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
 		http.Error(w, "Input file not found", http.StatusNotFound)
 		return
 	}
 
-	// Create a temporary directory for intermediate clips
+	// Create temporary directory for .ts clips
 	tempDir, err := os.MkdirTemp("", "clips-*")
 	if err != nil {
 		http.Error(w, "Cannot create temp dir", http.StatusInternalServerError)
 		return
 	}
-	defer os.RemoveAll(tempDir) // Auto-delete when function exits
+	defer os.RemoveAll(tempDir)
 
 	var concatList bytes.Buffer
 
-	// For each range, create a temporary .ts clip
+	// Cut video into temporary .ts segments using ffmpeg
 	for i, r := range req.Ranges {
 		outFile := filepath.Join(tempDir, fmt.Sprintf("clip_%d.ts", i))
+
 		cmd := exec.Command(getFFmpegBinary(),
 			"-i", inputPath,
 			"-ss", r.Start,
@@ -67,7 +67,6 @@ func CutHandler(w http.ResponseWriter, r *http.Request) {
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
 
-		// Run ffmpeg for this range
 		if err := cmd.Run(); err != nil {
 			http.Error(w, fmt.Sprintf("FFmpeg cut error: %v\nDetails: %s", err, stderr.String()), http.StatusInternalServerError)
 			return
@@ -76,18 +75,17 @@ func CutHandler(w http.ResponseWriter, r *http.Request) {
 		concatList.WriteString("file '" + outFile + "'\n")
 	}
 
-	// Save ffmpeg concat list
+	// Write concat list file
 	listPath := filepath.Join(tempDir, "inputs.txt")
 	if err := ioutil.WriteFile(listPath, concatList.Bytes(), 0644); err != nil {
 		http.Error(w, "Cannot write concat list", http.StatusInternalServerError)
 		return
 	}
 
-	// Overwrite original file with merged result
+	// Merge segments into original file (overwrite)
 	outputPath := inputPath
 	outputName := originalName
 
-	// Merge all .ts clips into one .mp4
 	mergeCmd := exec.Command(getFFmpegBinary(),
 		"-y",
 		"-f", "concat",
@@ -105,16 +103,16 @@ func CutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Clean up all other video files in uploads/ except the one we just saved
+	// Remove all other video files with the same extension in uploads/
 	ext := filepath.Ext(originalName)
 	_ = filepath.Walk("uploads", func(path string, info fs.FileInfo, err error) error {
 		if path != outputPath && strings.HasSuffix(path, ext) {
-			os.Remove(path)
+			_ = os.Remove(path)
 		}
 		return nil
 	})
 
-	// Send response with filename
+	// Send success response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
 		"message":  "Video saved",
@@ -122,10 +120,19 @@ func CutHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// getFFmpegBinary returns platform-specific binary name
+// getFFmpegBinary resolves the path to ffmpeg or ffmpeg.exe depending on OS and executable location
 func getFFmpegBinary() string {
+	name := "ffmpeg"
+
 	if runtime.GOOS == "windows" {
-		return "ffmpeg.exe"
+		name = fmt.Sprintf("%s.exe", name)
+
+		exePath, err := os.Executable()
+		if err != nil {
+			return name
+		}
+		return filepath.Join(filepath.Dir(exePath), name)
 	}
-	return "ffmpeg"
+
+	return name
 }
