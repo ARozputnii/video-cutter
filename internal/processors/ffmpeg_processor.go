@@ -24,7 +24,6 @@ func (f *FFmpegProcessor) CutSegment(inputPath, start, end, outFile string) erro
 		"-ss", start,
 		"-to", end,
 		"-c", "copy",
-		"-bsf:v", "h264_mp4toannexb",
 		"-f", "mpegts",
 		outFile,
 	)
